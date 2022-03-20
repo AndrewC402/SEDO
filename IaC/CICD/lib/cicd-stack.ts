@@ -15,7 +15,6 @@ export class CicdStack extends Stack {
       webhookFilters: [
         codebuild.FilterGroup
           .inEventOf(codebuild.EventAction.PUSH)
-          .andBranchIs('master')
       ]
     })
 

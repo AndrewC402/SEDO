@@ -164,10 +164,6 @@
               {
                 "Pattern": "PUSH",
                 "Type": "EVENT"
-              },
-              {
-                "Pattern": "refs/heads/master",
-                "Type": "HEAD_REF"
               }
             ]
           ],
