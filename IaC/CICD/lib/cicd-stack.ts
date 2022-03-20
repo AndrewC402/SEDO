@@ -16,7 +16,6 @@ export class CicdStack extends Stack {
         codebuild.FilterGroup
           .inEventOf(codebuild.EventAction.PUSH)
           .andBranchIs('master')
-          .andCommitMessageIs('build')
       ]
     })
 

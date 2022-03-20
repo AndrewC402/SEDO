@@ -168,10 +168,6 @@
               {
                 "Pattern": "refs/heads/master",
                 "Type": "HEAD_REF"
-              },
-              {
-                "Pattern": "build",
-                "Type": "COMMIT_MESSAGE"
               }
             ]
           ],

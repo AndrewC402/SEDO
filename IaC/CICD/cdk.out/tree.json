@@ -222,10 +222,6 @@
                           {
                             "type": "HEAD_REF",
                             "pattern": "refs/heads/master"
-                          },
-                          {
-                            "type": "COMMIT_MESSAGE",
-                            "pattern": "build"
                           }
                         ]
                       ]
