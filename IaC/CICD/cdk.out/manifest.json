@@ -17,20 +17,20 @@
     },
     "CicdStack": {
       "type": "aws:cloudformation:stack",
-      "environment": "aws://unknown-account/unknown-region",
+      "environment": "aws://345813082846/eu-west-2",
       "properties": {
         "templateFile": "CicdStack.template.json",
         "validateOnSynth": false,
-        "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-deploy-role-${AWS::AccountId}-${AWS::Region}",
-        "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-cfn-exec-role-${AWS::AccountId}-${AWS::Region}",
-        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/cff3c73a4358652cbdf28dabece6295370b79fd34ff82506fd18f164cf1a1a9b.json",
+        "assumeRoleArn": "arn:${AWS::Partition}:iam::345813082846:role/cdk-hnb659fds-deploy-role-345813082846-eu-west-2",
+        "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::345813082846:role/cdk-hnb659fds-cfn-exec-role-345813082846-eu-west-2",
+        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-345813082846-eu-west-2/85aa841151864d35fd3afec1e144f92da40ffcf4b55c67da33fa675e1010cafa.json",
         "requiresBootstrapStackVersion": 6,
         "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version",
         "additionalDependencies": [
           "CicdStack.assets"
         ],
         "lookupRole": {
-          "arn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-lookup-role-${AWS::AccountId}-${AWS::Region}",
+          "arn": "arn:${AWS::Partition}:iam::345813082846:role/cdk-hnb659fds-lookup-role-345813082846-eu-west-2",
           "requiresBootstrapStackVersion": 8,
           "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version"
         }
@@ -39,6 +39,54 @@
         "CicdStack.assets"
       ],
       "metadata": {
+        "/CicdStack/ASG/InstanceSecurityGroup/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ASGInstanceSecurityGroup0525485D"
+          }
+        ],
+        "/CicdStack/ASG/InstanceRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ASGInstanceRoleE263A41B"
+          }
+        ],
+        "/CicdStack/ASG/InstanceRole/DefaultPolicy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ASGInstanceRoleDefaultPolicy7636D8BF"
+          }
+        ],
+        "/CicdStack/ASG/InstanceProfile": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ASGInstanceProfile0A2834D7"
+          }
+        ],
+        "/CicdStack/ASG/LaunchConfig": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ASGLaunchConfigC00AF12B"
+          }
+        ],
+        "/CicdStack/ASG/ASG": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ASG46ED3070"
+          }
+        ],
+        "/CicdStack/SsmParameterValue:--aws--service--ami-amazon-linux-latest--amzn-ami-hvm-x86_64-gp2:C96584B6-F00A-464E-AD19-53AFF4B05118.Parameter": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SsmParameterValueawsserviceamiamazonlinuxlatestamznamihvmx8664gp2C96584B6F00A464EAD1953AFF4B05118Parameter"
+          }
+        ],
+        "/CicdStack/ArtifactBucket/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "ArtifactBucket7410C9EF"
+          }
+        ],
         "/CicdStack/SEDO/Role/Resource": [
           {
             "type": "aws:cdk:logicalId",
@@ -57,16 +105,28 @@
             "data": "SEDO59735FC5"
           }
         ],
+        "/CicdStack/SEDO_Application/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SEDOApplication1CCD7974"
+          }
+        ],
+        "/CicdStack/SEDO_deployment_group/Role/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SEDOdeploymentgroupRole202EF138"
+          }
+        ],
+        "/CicdStack/SEDO_deployment_group/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SEDOdeploymentgroup8FC3779E"
+          }
+        ],
         "/CicdStack/CDKMetadata/Default": [
           {
             "type": "aws:cdk:logicalId",
             "data": "CDKMetadata"
-          }
-        ],
-        "/CicdStack/CDKMetadata/Condition": [
-          {
-            "type": "aws:cdk:logicalId",
-            "data": "CDKMetadataAvailable"
           }
         ],
         "/CicdStack/BootstrapVersion": [

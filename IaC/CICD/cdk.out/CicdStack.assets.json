@@ -1,16 +1,17 @@
 {
   "version": "16.0.0",
   "files": {
-    "cff3c73a4358652cbdf28dabece6295370b79fd34ff82506fd18f164cf1a1a9b": {
+    "85aa841151864d35fd3afec1e144f92da40ffcf4b55c67da33fa675e1010cafa": {
       "source": {
         "path": "CicdStack.template.json",
         "packaging": "file"
       },
       "destinations": {
-        "current_account-current_region": {
-          "bucketName": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}",
-          "objectKey": "cff3c73a4358652cbdf28dabece6295370b79fd34ff82506fd18f164cf1a1a9b.json",
-          "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-file-publishing-role-${AWS::AccountId}-${AWS::Region}"
+        "345813082846-eu-west-2": {
+          "bucketName": "cdk-hnb659fds-assets-345813082846-eu-west-2",
+          "objectKey": "85aa841151864d35fd3afec1e144f92da40ffcf4b55c67da33fa675e1010cafa.json",
+          "region": "eu-west-2",
+          "assumeRoleArn": "arn:${AWS::Partition}:iam::345813082846:role/cdk-hnb659fds-file-publishing-role-345813082846-eu-west-2"
         }
       }
     }

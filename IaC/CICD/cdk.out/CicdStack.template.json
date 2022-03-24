@@ -1,5 +1,188 @@
 {
   "Resources": {
+    "ASGInstanceSecurityGroup0525485D": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "CicdStack/ASG/InstanceSecurityGroup",
+        "SecurityGroupEgress": [
+          {
+            "CidrIp": "0.0.0.0/0",
+            "Description": "Allow all outbound traffic by default",
+            "IpProtocol": "-1"
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "CicdStack/ASG"
+          }
+        ],
+        "VpcId": "vpc-092aa7e1c3b958252"
+      },
+      "Metadata": {
+        "aws:cdk:path": "CicdStack/ASG/InstanceSecurityGroup/Resource"
+      }
+    },
+    "ASGInstanceRoleE263A41B": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "ec2.amazonaws.com"
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "CicdStack/ASG"
+          }
+        ]
+      },
+      "Metadata": {
+        "aws:cdk:path": "CicdStack/ASG/InstanceRole/Resource"
+      }
+    },
+    "ASGInstanceRoleDefaultPolicy7636D8BF": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": [
+                "s3:GetObject*",
+                "s3:GetBucket*",
+                "s3:List*"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition"
+                      },
+                      ":s3:::aws-codedeploy-eu-west-2"
+                    ]
+                  ]
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition"
+                      },
+                      ":s3:::aws-codedeploy-eu-west-2/latest/*"
+                    ]
+                  ]
+                }
+              ]
+            }
+          ],
+          "Version": "2012-10-17"
+        },
+        "PolicyName": "ASGInstanceRoleDefaultPolicy7636D8BF",
+        "Roles": [
+          {
+            "Ref": "ASGInstanceRoleE263A41B"
+          }
+        ]
+      },
+      "Metadata": {
+        "aws:cdk:path": "CicdStack/ASG/InstanceRole/DefaultPolicy/Resource"
+      }
+    },
+    "ASGInstanceProfile0A2834D7": {
+      "Type": "AWS::IAM::InstanceProfile",
+      "Properties": {
+        "Roles": [
+          {
+            "Ref": "ASGInstanceRoleE263A41B"
+          }
+        ]
+      },
+      "Metadata": {
+        "aws:cdk:path": "CicdStack/ASG/InstanceProfile"
+      }
+    },
+    "ASGLaunchConfigC00AF12B": {
+      "Type": "AWS::AutoScaling::LaunchConfiguration",
+      "Properties": {
+        "ImageId": {
+          "Ref": "SsmParameterValueawsserviceamiamazonlinuxlatestamznamihvmx8664gp2C96584B6F00A464EAD1953AFF4B05118Parameter"
+        },
+        "InstanceType": "t3.micro",
+        "IamInstanceProfile": {
+          "Ref": "ASGInstanceProfile0A2834D7"
+        },
+        "SecurityGroups": [
+          {
+            "Fn::GetAtt": [
+              "ASGInstanceSecurityGroup0525485D",
+              "GroupId"
+            ]
+          }
+        ],
+        "UserData": {
+          "Fn::Base64": "#!/bin/bash\nset +e\nPKG_CMD=`which yum 2>/dev/null`\nset -e\nif [ -z \"$PKG_CMD\" ]; then\nPKG_CMD=apt-get\nelse\nPKG_CMD=yum\nfi\n$PKG_CMD update -y\nset +e\n$PKG_CMD install -y ruby2.0\nRUBY2_INSTALL=$?\nset -e\nif [ $RUBY2_INSTALL -ne 0 ]; then\n$PKG_CMD install -y ruby\nfi\nAWS_CLI_PACKAGE_NAME=awscli\nif [ \"$PKG_CMD\" = \"yum\" ]; then\nAWS_CLI_PACKAGE_NAME=aws-cli\nfi\n$PKG_CMD install -y $AWS_CLI_PACKAGE_NAME\nTMP_DIR=`mktemp -d`\ncd $TMP_DIR\naws s3 cp s3://aws-codedeploy-eu-west-2/latest/install . --region eu-west-2\nchmod +x ./install\n./install auto\nrm -fr $TMP_DIR"
+        }
+      },
+      "DependsOn": [
+        "ASGInstanceRoleDefaultPolicy7636D8BF",
+        "ASGInstanceRoleE263A41B"
+      ],
+      "Metadata": {
+        "aws:cdk:path": "CicdStack/ASG/LaunchConfig"
+      }
+    },
+    "ASG46ED3070": {
+      "Type": "AWS::AutoScaling::AutoScalingGroup",
+      "Properties": {
+        "MaxSize": "1",
+        "MinSize": "1",
+        "LaunchConfigurationName": {
+          "Ref": "ASGLaunchConfigC00AF12B"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "PropagateAtLaunch": true,
+            "Value": "CicdStack/ASG"
+          }
+        ],
+        "VPCZoneIdentifier": [
+          "subnet-08f3e24fa7cececb9",
+          "subnet-052d235e8ba9ddba6",
+          "subnet-01dc82d519198e6e9"
+        ]
+      },
+      "UpdatePolicy": {
+        "AutoScalingScheduledAction": {
+          "IgnoreUnmodifiedGroupSizeProperties": true
+        }
+      },
+      "Metadata": {
+        "aws:cdk:path": "CicdStack/ASG/ASG"
+      }
+    },
+    "ArtifactBucket7410C9EF": {
+      "Type": "AWS::S3::Bucket",
+      "UpdateReplacePolicy": "Retain",
+      "DeletionPolicy": "Retain",
+      "Metadata": {
+        "aws:cdk:path": "CicdStack/ArtifactBucket/Resource"
+      }
+    },
     "SEDORole88EBD678": {
       "Type": "AWS::IAM::Role",
       "Properties": {
@@ -27,6 +210,43 @@
           "Statement": [
             {
               "Action": [
+                "s3:GetObject*",
+                "s3:GetBucket*",
+                "s3:List*",
+                "s3:DeleteObject*",
+                "s3:PutObject",
+                "s3:PutObjectLegalHold",
+                "s3:PutObjectRetention",
+                "s3:PutObjectTagging",
+                "s3:PutObjectVersionTagging",
+                "s3:Abort*"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "ArtifactBucket7410C9EF",
+                    "Arn"
+                  ]
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      {
+                        "Fn::GetAtt": [
+                          "ArtifactBucket7410C9EF",
+                          "Arn"
+                        ]
+                      },
+                      "/*"
+                    ]
+                  ]
+                }
+              ]
+            },
+            {
+              "Action": [
                 "logs:CreateLogGroup",
                 "logs:CreateLogStream",
                 "logs:PutLogEvents"
@@ -41,15 +261,7 @@
                       {
                         "Ref": "AWS::Partition"
                       },
-                      ":logs:",
-                      {
-                        "Ref": "AWS::Region"
-                      },
-                      ":",
-                      {
-                        "Ref": "AWS::AccountId"
-                      },
-                      ":log-group:/aws/codebuild/",
+                      ":logs:eu-west-2:345813082846:log-group:/aws/codebuild/",
                       {
                         "Ref": "SEDO59735FC5"
                       }
@@ -64,15 +276,7 @@
                       {
                         "Ref": "AWS::Partition"
                       },
-                      ":logs:",
-                      {
-                        "Ref": "AWS::Region"
-                      },
-                      ":",
-                      {
-                        "Ref": "AWS::AccountId"
-                      },
-                      ":log-group:/aws/codebuild/",
+                      ":logs:eu-west-2:345813082846:log-group:/aws/codebuild/",
                       {
                         "Ref": "SEDO59735FC5"
                       },
@@ -99,15 +303,7 @@
                     {
                       "Ref": "AWS::Partition"
                     },
-                    ":codebuild:",
-                    {
-                      "Ref": "AWS::Region"
-                    },
-                    ":",
-                    {
-                      "Ref": "AWS::AccountId"
-                    },
-                    ":report-group/",
+                    ":codebuild:eu-west-2:345813082846:report-group/",
                     {
                       "Ref": "SEDO59735FC5"
                     },
@@ -134,7 +330,15 @@
       "Type": "AWS::CodeBuild::Project",
       "Properties": {
         "Artifacts": {
-          "Type": "NO_ARTIFACTS"
+          "ArtifactIdentifier": "latest_build",
+          "Location": {
+            "Ref": "ArtifactBucket7410C9EF"
+          },
+          "NamespaceType": "NONE",
+          "OverrideArtifactName": true,
+          "Packaging": "ZIP",
+          "Path": "build/latest",
+          "Type": "S3"
         },
         "Environment": {
           "ComputeType": "BUILD_GENERAL1_SMALL",
@@ -150,7 +354,7 @@
           ]
         },
         "Source": {
-          "Location": "https://github.com/AndrewC402/SEDO.git",
+          "Location": "https://github.com/AndrewC402/SEDO_Application.git",
           "ReportBuildStatus": true,
           "Type": "GITHUB"
         },
@@ -174,212 +378,94 @@
         "aws:cdk:path": "CicdStack/SEDO/Resource"
       }
     },
+    "SEDOApplication1CCD7974": {
+      "Type": "AWS::CodeDeploy::Application",
+      "Properties": {
+        "ApplicationName": "SEDO",
+        "ComputePlatform": "Server"
+      },
+      "Metadata": {
+        "aws:cdk:path": "CicdStack/SEDO_Application/Resource"
+      }
+    },
+    "SEDOdeploymentgroupRole202EF138": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "codedeploy.eu-west-2.amazonaws.com"
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        },
+        "ManagedPolicyArns": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":iam::aws:policy/service-role/AWSCodeDeployRole"
+              ]
+            ]
+          }
+        ]
+      },
+      "Metadata": {
+        "aws:cdk:path": "CicdStack/SEDO_deployment_group/Role/Resource"
+      }
+    },
+    "SEDOdeploymentgroup8FC3779E": {
+      "Type": "AWS::CodeDeploy::DeploymentGroup",
+      "Properties": {
+        "ApplicationName": {
+          "Ref": "SEDOApplication1CCD7974"
+        },
+        "ServiceRoleArn": {
+          "Fn::GetAtt": [
+            "SEDOdeploymentgroupRole202EF138",
+            "Arn"
+          ]
+        },
+        "AutoRollbackConfiguration": {
+          "Enabled": true,
+          "Events": [
+            "DEPLOYMENT_FAILURE"
+          ]
+        },
+        "AutoScalingGroups": [
+          {
+            "Ref": "ASG46ED3070"
+          }
+        ],
+        "DeploymentGroupName": "SEDO_deployment_group"
+      },
+      "Metadata": {
+        "aws:cdk:path": "CicdStack/SEDO_deployment_group/Resource"
+      }
+    },
     "CDKMetadata": {
       "Type": "AWS::CDK::Metadata",
       "Properties": {
-        "Analytics": "v2:deflate64:H4sIAAAAAAAA/y2OXQrCMBCEz+J7sloRPUAvUOoBSrqJsGmahfwoEnJ3Y/RpPmaGYc4w3OB0UK8oUW/S0QrlnhRuollLQdZmzeQ0lCmwNZjE+PB/rILUDmVmZ75u14kd4buXOtXaIxM5B+y1kb2mROyr8G0dbDw+hysMl3bDRiIZsk+0G5h/+gEWlUpkogAAAA=="
+        "Analytics": "v2:deflate64:H4sIAAAAAAAA/11R207DMAz9Ft7TwAaC510khMTD1H0A8lx3uE2TKpehKsq/k160wZ7sc7GOnazl6k0+PcCPK7BqC8UnGY8esBUlORMsksjaV4TgjUNQrM8ybjI4zuDdmtCLXa0/IWj83hld8zlY8Gz0SN9bkyBc5wjCYNkP1/F/RBIMnYylUTRqUz0YxTiM8NZ9aOdBIx2sqVlREu5Zxm3AlvwoL91ctuCyAU1Fp8CqkjEPNYSTcWlnuaJemWFc0V7Ibvo+p93O+QNnw36yd6T99ZY7KqUpAyx05MlOFy1vm4TOibJxj5fVq1y95J9oHHNhg/bckSzn+gtYjLtApQEAAA=="
       },
       "Metadata": {
         "aws:cdk:path": "CicdStack/CDKMetadata/Default"
-      },
-      "Condition": "CDKMetadataAvailable"
-    }
-  },
-  "Conditions": {
-    "CDKMetadataAvailable": {
-      "Fn::Or": [
-        {
-          "Fn::Or": [
-            {
-              "Fn::Equals": [
-                {
-                  "Ref": "AWS::Region"
-                },
-                "af-south-1"
-              ]
-            },
-            {
-              "Fn::Equals": [
-                {
-                  "Ref": "AWS::Region"
-                },
-                "ap-east-1"
-              ]
-            },
-            {
-              "Fn::Equals": [
-                {
-                  "Ref": "AWS::Region"
-                },
-                "ap-northeast-1"
-              ]
-            },
-            {
-              "Fn::Equals": [
-                {
-                  "Ref": "AWS::Region"
-                },
-                "ap-northeast-2"
-              ]
-            },
-            {
-              "Fn::Equals": [
-                {
-                  "Ref": "AWS::Region"
-                },
-                "ap-south-1"
-              ]
-            },
-            {
-              "Fn::Equals": [
-                {
-                  "Ref": "AWS::Region"
-                },
-                "ap-southeast-1"
-              ]
-            },
-            {
-              "Fn::Equals": [
-                {
-                  "Ref": "AWS::Region"
-                },
-                "ap-southeast-2"
-              ]
-            },
-            {
-              "Fn::Equals": [
-                {
-                  "Ref": "AWS::Region"
-                },
-                "ca-central-1"
-              ]
-            },
-            {
-              "Fn::Equals": [
-                {
-                  "Ref": "AWS::Region"
-                },
-                "cn-north-1"
-              ]
-            },
-            {
-              "Fn::Equals": [
-                {
-                  "Ref": "AWS::Region"
-                },
-                "cn-northwest-1"
-              ]
-            }
-          ]
-        },
-        {
-          "Fn::Or": [
-            {
-              "Fn::Equals": [
-                {
-                  "Ref": "AWS::Region"
-                },
-                "eu-central-1"
-              ]
-            },
-            {
-              "Fn::Equals": [
-                {
-                  "Ref": "AWS::Region"
-                },
-                "eu-north-1"
-              ]
-            },
-            {
-              "Fn::Equals": [
-                {
-                  "Ref": "AWS::Region"
-                },
-                "eu-south-1"
-              ]
-            },
-            {
-              "Fn::Equals": [
-                {
-                  "Ref": "AWS::Region"
-                },
-                "eu-west-1"
-              ]
-            },
-            {
-              "Fn::Equals": [
-                {
-                  "Ref": "AWS::Region"
-                },
-                "eu-west-2"
-              ]
-            },
-            {
-              "Fn::Equals": [
-                {
-                  "Ref": "AWS::Region"
-                },
-                "eu-west-3"
-              ]
-            },
-            {
-              "Fn::Equals": [
-                {
-                  "Ref": "AWS::Region"
-                },
-                "me-south-1"
-              ]
-            },
-            {
-              "Fn::Equals": [
-                {
-                  "Ref": "AWS::Region"
-                },
-                "sa-east-1"
-              ]
-            },
-            {
-              "Fn::Equals": [
-                {
-                  "Ref": "AWS::Region"
-                },
-                "us-east-1"
-              ]
-            },
-            {
-              "Fn::Equals": [
-                {
-                  "Ref": "AWS::Region"
-                },
-                "us-east-2"
-              ]
-            }
-          ]
-        },
-        {
-          "Fn::Or": [
-            {
-              "Fn::Equals": [
-                {
-                  "Ref": "AWS::Region"
-                },
-                "us-west-1"
-              ]
-            },
-            {
-              "Fn::Equals": [
-                {
-                  "Ref": "AWS::Region"
-                },
-                "us-west-2"
-              ]
-            }
-          ]
-        }
-      ]
+      }
     }
   },
   "Parameters": {
+    "SsmParameterValueawsserviceamiamazonlinuxlatestamznamihvmx8664gp2C96584B6F00A464EAD1953AFF4B05118Parameter": {
+      "Type": "AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>",
+      "Default": "/aws/service/ami-amazon-linux-latest/amzn-ami-hvm-x86_64-gp2"
+    },
     "BootstrapVersion": {
       "Type": "AWS::SSM::Parameter::Value<String>",
       "Default": "/cdk-bootstrap/hnb659fds/version",
